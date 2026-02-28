@@ -21,6 +21,8 @@ type ArticleInput = ArticleInputBase & {
 
 type TariffColumn = { id: string; label: string };
 
+type EnrichissementLine = { fournisseur: string; codag: string };
+
 export function NouveauTicketPage() {
   const { userId } = useAuth();
   const navigate = useNavigate();
@@ -57,8 +59,15 @@ export function NouveauTicketPage() {
     startWidth: number;
   } | null>(null);
   const [linesToAdd, setLinesToAdd] = useState<number>(1);
+  const [enrichissementLines, setEnrichissementLines] = useState<EnrichissementLine[]>([
+    { fournisseur: "", codag: "" }
+  ]);
+  const [enrichissementLinesToAdd, setEnrichissementLinesToAdd] = useState<number>(1);
+  const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const BUCKET_ATTACHMENTS = "ticket-attachments";
 
   useEffect(() => {
     const loadGdr = async () => {
@@ -211,6 +220,32 @@ export function NouveauTicketPage() {
     setTarifColumns((prev) => prev.map((c) => (c.id === id ? { ...c, label } : c)));
   };
 
+  const updateEnrichissementLine = (
+    index: number,
+    field: keyof EnrichissementLine,
+    value: string
+  ) => {
+    const upper = value.toUpperCase();
+    setEnrichissementLines((prev) =>
+      prev.map((line, i) => (i === index ? { ...line, [field]: upper } : line))
+    );
+  };
+
+  const addEnrichissementLines = (count = 1) => {
+    const n = Number.isFinite(count) && count > 0 ? Math.min(Math.floor(count), 200) : 1;
+    setEnrichissementLines((prev) => [
+      ...prev,
+      ...Array.from({ length: n }, () => ({ fournisseur: "", codag: "" }))
+    ]);
+  };
+
+  const removeEnrichissementLine = (index: number) => {
+    setEnrichissementLines((prev) => {
+      if (prev.length <= 1) return [{ fournisseur: "", codag: "" }];
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const handleExcelImport = async (file: File) => {
     const parsed = await parseArticleExcel(file);
     if (parsed.length > 0) {
@@ -306,6 +341,7 @@ export function NouveauTicketPage() {
     }
 
     setType("creation");
+    setAttachmentFiles([]);
     setGdrId("");
     setUrgent(false);
     setUrgentReason("");
@@ -322,6 +358,8 @@ export function NouveauTicketPage() {
       }
     ]);
     setLinesToAdd(1);
+    setEnrichissementLines([{ fournisseur: "", codag: "" }]);
+    setEnrichissementLinesToAdd(1);
     setError(null);
   };
 
@@ -476,45 +514,95 @@ export function NouveauTicketPage() {
 
       const ticketId = ticketData.id as number;
 
-      const cleanArticles = articles.filter(
-        (a) => a.nom_fournisseur && a.marque && a.ref_info && a.designation
-      );
+      if (type === "enrichissement") {
+        const cleanEnrichissement = enrichissementLines.filter(
+          (l) => (l.fournisseur?.trim() ?? "") !== "" || (l.codag?.trim() ?? "") !== ""
+        );
+        if (cleanEnrichissement.length > 0) {
+          const { error: articleError } = await supabase.from("article_lines").insert(
+            cleanEnrichissement.map((l) => ({
+              ticket_id: ticketId,
+              nom_fournisseur: (l.fournisseur?.trim() ?? "") || "-",
+              marque: "-",
+              ref_info: "-",
+              designation: "-",
+              ean: null,
+              ref_com: null,
+              tarif: null,
+              codag_attribue: (l.codag?.trim() ?? "") || null
+            }))
+          );
+          if (articleError) {
+            console.error("Erreur création lignes enrichissement", articleError);
+            setError(articleError.message || "Erreur lors de la création des lignes.");
+            setSubmitting(false);
+            return;
+          }
+        }
+      } else {
+        const cleanArticles = articles.filter(
+          (a) => a.nom_fournisseur && a.marque && a.ref_info && a.designation
+        );
 
-      if (cleanArticles.length > 0) {
-        const { error: articleError } = await supabase.from("article_lines").insert(
-          cleanArticles.map((a) => {
-            const firstTarifColId = tarifColumns[0]?.id;
-            let firstTarif: number | null = null;
-            if (firstTarifColId != null) {
-              const raw = (a.tarifs[firstTarifColId] ?? "").toString().trim();
-              if (raw) {
-                const num = Number(raw.replace(",", "."));
-                if (Number.isFinite(num)) {
-                  firstTarif = Math.round(num * 100) / 100;
+        if (cleanArticles.length > 0) {
+          const { error: articleError } = await supabase.from("article_lines").insert(
+            cleanArticles.map((a) => {
+              const firstTarifColId = tarifColumns[0]?.id;
+              let firstTarif: number | null = null;
+              if (firstTarifColId != null) {
+                const raw = (a.tarifs[firstTarifColId] ?? "").toString().trim();
+                if (raw) {
+                  const num = Number(raw.replace(",", "."));
+                  if (Number.isFinite(num)) {
+                    firstTarif = Math.round(num * 100) / 100;
+                  }
                 }
               }
-            }
-            return {
-              nom_fournisseur: a.nom_fournisseur,
-              marque: a.marque,
-              ref_info: a.ref_info,
-              ean: a.ean,
-              ref_com: a.ref_com,
-              designation: a.designation,
-              tarif: firstTarif,
-              ticket_id: ticketId
-            };
-          })
-        );
-        if (articleError) {
-          // eslint-disable-next-line no-console
-          console.error("Erreur création lignes article", articleError);
-          setError(
-            articleError.message ||
-              "Erreur lors de la création des lignes articles (vérifiez les tarifs)."
+              return {
+                nom_fournisseur: a.nom_fournisseur,
+                marque: a.marque,
+                ref_info: a.ref_info,
+                ean: a.ean,
+                ref_com: a.ref_com,
+                designation: a.designation,
+                tarif: firstTarif,
+                ticket_id: ticketId
+              };
+            })
           );
-          setSubmitting(false);
-          return;
+          if (articleError) {
+            console.error("Erreur création lignes article", articleError);
+            setError(
+              articleError.message ||
+                "Erreur lors de la création des lignes articles (vérifiez les tarifs)."
+            );
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      if (attachmentFiles.length > 0) {
+        for (let i = 0; i < attachmentFiles.length; i++) {
+          const file = attachmentFiles[i];
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const path = `${ticketId}/${Date.now()}-${i}-${safeName}`;
+          const { error: uploadError } = await supabase.storage
+            .from(BUCKET_ATTACHMENTS)
+            .upload(path, file, { contentType: file.type || "application/octet-stream" });
+          if (uploadError) {
+            setError(`Erreur upload pièce jointe "${file.name}": ${uploadError.message}`);
+            setSubmitting(false);
+            return;
+          }
+          const { data: urlData } = supabase.storage
+            .from(BUCKET_ATTACHMENTS)
+            .getPublicUrl(path);
+          await supabase.from("attachments").insert({
+            ticket_id: ticketId,
+            file_name: file.name,
+            file_url: urlData.publicUrl
+          });
         }
       }
 
@@ -612,7 +700,98 @@ export function NouveauTicketPage() {
         <Card className="py-3">
           <CardHeader className="pb-1">
             <CardTitle className="text-sm">Articles</CardTitle>
+            {type === "enrichissement" && (
+              <CardDescription className="text-xs">
+                Lignes à enrichir : Fournisseur et CODAG. Vous pouvez aussi joindre des fichiers ci-dessous.
+              </CardDescription>
+            )}
           </CardHeader>
+          {type === "enrichissement" ? (
+            <div className="px-4 pb-2">
+              <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 px-0.5 py-0.5">
+                <table className="min-w-full text-[11px] md:text-xs">
+                  <thead>
+                    <tr className="bg-slate-100 text-[11px] uppercase tracking-wide text-slate-600">
+                      <th className="px-1 py-0.5 text-left">Fournisseur</th>
+                      <th className="px-1 py-0.5 text-left">CODAG</th>
+                      <th className="w-9 px-0.5 py-0.5" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {enrichissementLines.map((line, idx) => (
+                      <tr key={idx} className="align-top">
+                        <td className="px-1 py-0.5">
+                          <Input
+                            placeholder="Fournisseur"
+                            value={line.fournisseur}
+                            onChange={(e) => updateEnrichissementLine(idx, "fournisseur", e.target.value)}
+                            className="text-xs"
+                          />
+                        </td>
+                        <td className="px-1 py-0.5">
+                          <Input
+                            placeholder="CODAG"
+                            value={line.codag}
+                            onChange={(e) => updateEnrichissementLine(idx, "codag", e.target.value)}
+                            className="text-xs"
+                          />
+                        </td>
+                        <td className="px-1 py-0.5 text-center align-middle">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 shrink-0 p-0.5 text-slate-500 hover:text-red-600"
+                            onClick={() => removeEnrichissementLine(idx)}
+                            aria-label="Supprimer la ligne"
+                            title="Supprimer la ligne"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M3 6h18" />
+                              <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                            </svg>
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 inline-flex w-fit items-center gap-2 text-xs text-slate-600">
+                <span>Ajouter</span>
+                <Input
+                  type="number"
+                  className="h-7 w-16 px-2 text-xs"
+                  min={1}
+                  max={200}
+                  value={enrichissementLinesToAdd}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setEnrichissementLinesToAdd(Number.isFinite(v) && v > 0 ? Math.min(Math.floor(v), 200) : 1);
+                  }}
+                />
+                <span>ligne(s)</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="inline-flex h-9 items-center gap-1.5 px-2 text-slate-600 hover:text-primary hover:bg-primary/10"
+                  onClick={() => addEnrichissementLines(enrichissementLinesToAdd)}
+                  aria-label="Ajouter des lignes"
+                  title="Ajouter des lignes"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                  Ajouter
+                </Button>
+              </div>
+            </div>
+          ) : (
+          <>
           <div className="mb-3 flex items-start justify-between gap-2 px-4 text-[11px]">
             <div className="inline-flex flex-wrap items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1">
               <span className="text-slate-600">
@@ -652,12 +831,12 @@ export function NouveauTicketPage() {
               Copier le tableau
             </Button>
           </div>
-          <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 px-1 py-1">
+          <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 px-0.5 py-0.5">
             <table className="min-w-full border-separate border-spacing-y-1 text-[11px] md:text-xs table-fixed">
               <thead>
                 <tr className="bg-slate-100 text-[11px] uppercase tracking-wide text-slate-600">
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.nom_fournisseur }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -669,7 +848,7 @@ export function NouveauTicketPage() {
                     </div>
                   </th>
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.marque }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -681,7 +860,7 @@ export function NouveauTicketPage() {
                     </div>
                   </th>
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.ref_info }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -693,7 +872,7 @@ export function NouveauTicketPage() {
                     </div>
                   </th>
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.ean }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -705,7 +884,7 @@ export function NouveauTicketPage() {
                     </div>
                   </th>
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.ref_com }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -717,7 +896,7 @@ export function NouveauTicketPage() {
                     </div>
                   </th>
                   <th
-                    className="px-1.5 py-1 text-left"
+                    className="px-1 py-0.5 text-left"
                     style={{ width: columnWidths.designation }}
                   >
                     <div className="flex items-center justify-between gap-1">
@@ -731,7 +910,7 @@ export function NouveauTicketPage() {
                   {tarifColumns.map((col) => (
                     <th
                       key={col.id}
-                      className="px-1.5 py-1 text-left"
+                      className="px-1 py-0.5 text-left"
                       style={{ width: columnWidths[col.id] }}
                     >
                       <div className="flex items-center gap-1">
@@ -746,65 +925,46 @@ export function NouveauTicketPage() {
                             type="button"
                             size="sm"
                             variant="ghost"
-                            className="h-6 w-6 px-0"
+                            className="h-9 w-9 shrink-0 p-0.5 text-slate-500 hover:text-red-600"
                             onClick={() => removeTarifColumn(col.id)}
                             aria-label="Supprimer la colonne tarif"
                             title="Supprimer la colonne tarif"
                           >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              className="h-3 w-3 text-slate-500"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M3 6h18" />
-                              <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                              <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                              <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
                               <path d="M10 11v6" />
                               <path d="M14 11v6" />
-                              <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" />
                             </svg>
                           </Button>
                         )}
                       </div>
                     </th>
                   ))}
-                  <th className="px-1 py-1 text-left align-middle">
+                  <th className="px-0.5 py-0.5 text-left align-middle">
                     <Button
                       type="button"
                       size="sm"
                       variant="ghost"
-                      className="h-6 w-6 px-0"
+                      className="h-9 w-9 shrink-0 p-0.5 text-slate-500 hover:text-primary hover:bg-primary/10"
                       onClick={addTarifColumn}
                       aria-label="Ajouter une colonne tarif"
                       title="Ajouter une colonne tarif"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        className="h-3 w-3 text-slate-500"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12h14" />
                       </svg>
                     </Button>
                   </th>
-                  <th className="px-2 py-1" />
+                  <th className="w-9 px-0.5 py-0.5" />
                 </tr>
               </thead>
               <tbody>
                 {articles.map((a, idx) => (
                   <tr key={idx} className="align-top">
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.nom_fournisseur }}
                     >
                       <Input
@@ -821,7 +981,7 @@ export function NouveauTicketPage() {
                       />
                     </td>
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.marque }}
                     >
                       <Input
@@ -836,7 +996,7 @@ export function NouveauTicketPage() {
                       />
                     </td>
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.ref_info }}
                     >
                       <Input
@@ -853,7 +1013,7 @@ export function NouveauTicketPage() {
                       />
                     </td>
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.ean }}
                     >
                       <Input
@@ -868,7 +1028,7 @@ export function NouveauTicketPage() {
                       />
                     </td>
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.ref_com }}
                     >
                       <Input
@@ -883,7 +1043,7 @@ export function NouveauTicketPage() {
                       />
                     </td>
                     <td
-                      className="px-1.5 py-1"
+                      className="px-1 py-0.5"
                       style={{ width: columnWidths.designation }}
                     >
                       <Input
@@ -902,7 +1062,7 @@ export function NouveauTicketPage() {
                     {tarifColumns.map((col, tarifIndex) => (
                       <td
                         key={col.id}
-                        className="px-1.5 py-1"
+                        className="px-1 py-0.5"
                         style={{ width: columnWidths[col.id] }}
                       >
                         <Input
@@ -924,31 +1084,22 @@ export function NouveauTicketPage() {
                         />
                       </td>
                     ))}
-                    <td className="px-1.5 py-1 text-center align-middle">
+                    <td className="px-1 py-0.5 text-center align-middle">
                       <Button
                         type="button"
                         size="sm"
                         variant="ghost"
-                        className="h-7 w-7 px-0"
+                        className="h-9 w-9 shrink-0 p-0.5 text-slate-500 hover:text-red-600"
                         onClick={() => removeArticle(idx)}
                         aria-label="Supprimer la ligne"
                         title="Supprimer la ligne"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          className="h-4 w-4 text-slate-500"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 6h18" />
-                          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                          <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
                           <path d="M10 11v6" />
                           <path d="M14 11v6" />
-                          <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" />
                         </svg>
                       </Button>
                     </td>
@@ -957,7 +1108,7 @@ export function NouveauTicketPage() {
               </tbody>
             </table>
           </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-slate-600">
+          <div className="mt-3 inline-flex w-fit items-center gap-2 text-xs text-slate-600">
             <span>Ajouter</span>
             <Input
               type="number"
@@ -975,15 +1126,61 @@ export function NouveauTicketPage() {
               type="button"
               variant="ghost"
               size="sm"
-              className="px-2"
+              className="inline-flex h-9 items-center gap-1.5 px-2 text-slate-600 hover:text-primary hover:bg-primary/10"
               onClick={() => addArticle(linesToAdd)}
+              aria-label="Ajouter des lignes"
+              title="Ajouter des lignes"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 shrink-0" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
               Ajouter
             </Button>
           </div>
+          </>
+          )}
         </Card>
 
-        {/* TODO: zone de dépôt et upload vers Supabase Storage */}
+        <Card className="py-3">
+          <CardHeader className="pb-1">
+            <CardTitle className="text-sm">Pièces jointes</CardTitle>
+            <CardDescription className="text-xs">
+              Ajoutez des fichiers (optionnel). Ils seront enregistrés avec le ticket.
+            </CardDescription>
+          </CardHeader>
+          <div className="px-4 pb-2">
+            <input
+              type="file"
+              multiple
+              className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-primary-foreground file:hover:bg-primary/90"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (files?.length) {
+                  setAttachmentFiles((prev) => [...prev, ...Array.from(files)]);
+                  e.target.value = "";
+                }
+              }}
+            />
+            {attachmentFiles.length > 0 && (
+              <ul className="mt-2 space-y-1 text-xs text-slate-600">
+                {attachmentFiles.map((f, idx) => (
+                  <li key={`${f.name}-${idx}`} className="flex items-center gap-2">
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      className="shrink-0 text-red-600 hover:underline"
+                      onClick={() =>
+                        setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))
+                      }
+                    >
+                      Retirer
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </Card>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 

@@ -76,46 +76,46 @@ export function LignesPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Réf. ticket
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Type
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Statut
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Créé le
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Id ligne
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Nom fournisseur
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Marque
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Réf info
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     EAN
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Ref com
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Désignation
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Tarif
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left font-medium text-slate-600">
+                  <th className="whitespace-nowrap px-1.5 py-0.5 text-left font-medium text-slate-600">
                     CODAG attribué
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2" />
+                  <th className="whitespace-nowrap px-1.5 py-0.5" />
                 </tr>
               </thead>
               <tbody>
@@ -123,7 +123,7 @@ export function LignesPage() {
                   const ticket = l.ticket ?? l.tickets ?? null;
                   return (
                   <tr key={l.id} className="hover:bg-slate-50">
-                    <td className="whitespace-nowrap px-3 py-1.5 font-medium text-slate-900">
+                    <td className="whitespace-nowrap px-1.5 py-0.5 font-medium text-slate-900">
                       {ticket ? (
                         <Link
                           to={`/gdr/tickets/${ticket.id}`}
@@ -135,37 +135,37 @@ export function LignesPage() {
                         l.ticket_id
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-1.5 text-slate-600">
+                    <td className="whitespace-nowrap px-1.5 py-0.5 text-slate-600">
                       {ticket ? typeLabel(ticket.type) : "—"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-1.5 text-slate-600">
+                    <td className="whitespace-nowrap px-1.5 py-0.5 text-slate-600">
                       {ticket ? statusLabel(ticket.status) : "—"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-1.5 text-slate-600">
+                    <td className="whitespace-nowrap px-1.5 py-0.5 text-slate-600">
                       {ticket
                         ? new Date(ticket.created_at).toLocaleString("fr-FR")
                         : "—"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-1.5 text-slate-500">
+                    <td className="whitespace-nowrap px-1.5 py-0.5 text-slate-500">
                       {l.id}
                     </td>
-                    <td className="px-3 py-1.5">{l.nom_fournisseur}</td>
-                    <td className="px-3 py-1.5">{l.marque}</td>
-                    <td className="px-3 py-1.5">{l.ref_info}</td>
-                    <td className="px-3 py-1.5">{l.ean || "—"}</td>
-                    <td className="px-3 py-1.5">{l.ref_com || "—"}</td>
-                    <td className="max-w-[200px] truncate px-3 py-1.5" title={l.designation}>
+                    <td className="px-1.5 py-0.5">{l.nom_fournisseur}</td>
+                    <td className="px-1.5 py-0.5">{l.marque}</td>
+                    <td className="px-1.5 py-0.5">{l.ref_info}</td>
+                    <td className="px-1.5 py-0.5">{l.ean || "—"}</td>
+                    <td className="px-1.5 py-0.5">{l.ref_com || "—"}</td>
+                    <td className="max-w-[200px] truncate px-1.5 py-0.5" title={l.designation}>
                       {l.designation}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-1.5">
+                    <td className="whitespace-nowrap px-1.5 py-0.5">
                       {l.tarif != null
                         ? (Math.round(Number(l.tarif) * 100) / 100)
                             .toFixed(2)
                             .replace(".", ",")
                         : "—"}
                     </td>
-                    <td className="px-3 py-1.5">{l.codag_attribue || "—"}</td>
-                    <td className="whitespace-nowrap px-3 py-1.5 text-right">
+                    <td className="px-1.5 py-0.5">{l.codag_attribue || "—"}</td>
+                    <td className="whitespace-nowrap px-1.5 py-0.5 text-right">
                       {ticket && (
                         <Link
                           to={`/gdr/tickets/${ticket.id}`}

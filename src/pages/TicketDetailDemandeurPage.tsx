@@ -117,31 +117,43 @@ export function TicketDetailDemandeurPage() {
       }
 
       for (const line of editLines) {
-        const rawTarif = line.tarif_text.trim();
-        let tarif: number | null = null;
-        if (rawTarif) {
-          const num = Number(rawTarif.replace(",", "."));
-          if (Number.isFinite(num)) {
-            tarif = Math.round(num * 100) / 100;
+        if (ticket.type === "enrichissement") {
+          const { error: lineError } = await supabase
+            .from("article_lines")
+            .update({ nom_fournisseur: line.nom_fournisseur })
+            .eq("id", line.id);
+          if (lineError) {
+            setError(lineError.message);
+            setSaving(false);
+            return;
           }
-        }
+        } else {
+          const rawTarif = (line as EditableLine).tarif_text?.trim() ?? "";
+          let tarif: number | null = null;
+          if (rawTarif) {
+            const num = Number(rawTarif.replace(",", "."));
+            if (Number.isFinite(num)) {
+              tarif = Math.round(num * 100) / 100;
+            }
+          }
 
-        const { error: lineError } = await supabase
-          .from("article_lines")
-          .update({
-            nom_fournisseur: line.nom_fournisseur,
-            marque: line.marque,
-            ref_info: line.ref_info,
-            ean: line.ean,
-            ref_com: line.ref_com,
-            designation: line.designation,
-            tarif
-          })
-          .eq("id", line.id);
-        if (lineError) {
-          setError(lineError.message);
-          setSaving(false);
-          return;
+          const { error: lineError } = await supabase
+            .from("article_lines")
+            .update({
+              nom_fournisseur: line.nom_fournisseur,
+              marque: line.marque,
+              ref_info: line.ref_info,
+              ean: line.ean,
+              ref_com: line.ref_com,
+              designation: line.designation,
+              tarif
+            })
+            .eq("id", line.id);
+          if (lineError) {
+            setError(lineError.message);
+            setSaving(false);
+            return;
+          }
         }
       }
     } catch (err) {
@@ -222,149 +234,175 @@ export function TicketDetailDemandeurPage() {
           </section>
 
           <section className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="mb-2 text-sm font-semibold text-slate-800">Articles</h2>
+            <h2 className="mb-2 text-sm font-semibold text-slate-800">
+              {ticket.type === "enrichissement" ? "Lignes à enrichir" : "Articles"}
+            </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-xs md:text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Nom fournisseur
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Marque
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Réf info
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">EAN</th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Réf com
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Désignation
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
-                      Tarif
-                    </th>
-                    {(ticket.type === "creation" ||
-                      ticket.type === "creation_enrichissement") && (
-                      <th className="px-3 py-2 text-left font-medium text-slate-600">
+              {ticket.type === "enrichissement" ? (
+                <table className="min-w-full text-xs md:text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Fournisseur
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                         CODAG attribué
                       </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(isEditable ? editLines ?? [] : ticket.article_lines)?.map((l) => (
-                    <tr key={l.id} className="hover:bg-slate-50">
-                      {isEditable ? (
-                        <>
-                          <td className="px-3 py-1.5">
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(isEditable ? editLines ?? [] : ticket.article_lines)?.map((l) => (
+                      <tr key={l.id} className="hover:bg-slate-50">
+                        <td className="px-1 py-0.5">
+                          {isEditable ? (
                             <input
                               className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
                               value={l.nom_fournisseur}
                               onChange={(e) =>
-                                handleLineFieldChange(
-                                  l.id,
-                                  "nom_fournisseur",
-                                  e.target.value
-                                )
+                                handleLineFieldChange(l.id, "nom_fournisseur", e.target.value)
                               }
                             />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={l.marque}
-                              onChange={(e) =>
-                                handleLineFieldChange(l.id, "marque", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={l.ref_info}
-                              onChange={(e) =>
-                                handleLineFieldChange(l.id, "ref_info", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={l.ean}
-                              onChange={(e) =>
-                                handleLineFieldChange(l.id, "ean", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={l.ref_com}
-                              onChange={(e) =>
-                                handleLineFieldChange(l.id, "ref_com", e.target.value)
-                              }
-                            />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={l.designation}
-                              onChange={(e) =>
-                                handleLineFieldChange(
-                                  l.id,
-                                  "designation",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </td>
-                          <td className="px-3 py-1.5">
-                            <input
-                              className="h-7 w-24 rounded border border-slate-200 bg-white px-2 text-xs"
-                              value={(l as EditableLine).tarif_text}
-                              onChange={(e) =>
-                                handleLineTarifChange(l.id, e.target.value)
-                              }
-                              placeholder="0,00"
-                            />
-                          </td>
-                          {(ticket.type === "creation" ||
-                            ticket.type === "creation_enrichissement") && (
-                            <td className="px-3 py-1.5">
+                          ) : (
+                            l.nom_fournisseur
+                          )}
+                        </td>
+                        <td className="px-1 py-0.5">
+                          {l.codag_attribue || (
+                            <span className="text-slate-400">
+                              {isEditable ? "Sera attribué par le GDR" : "En cours"}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="min-w-full text-xs md:text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Nom fournisseur
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Marque
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Réf info
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">EAN</th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Réf com
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Désignation
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        Tarif
+                      </th>
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                        CODAG attribué
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(isEditable ? editLines ?? [] : ticket.article_lines)?.map((l) => (
+                      <tr key={l.id} className="hover:bg-slate-50">
+                        {isEditable ? (
+                          <>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.nom_fournisseur}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "nom_fournisseur", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.marque}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "marque", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.ref_info}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "ref_info", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.ean}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "ean", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.ref_com}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "ref_com", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={l.designation}
+                                onChange={(e) =>
+                                  handleLineFieldChange(l.id, "designation", e.target.value)
+                                }
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
+                              <input
+                                className="h-7 w-24 rounded border border-slate-200 bg-white px-2 text-xs"
+                                value={(l as EditableLine).tarif_text}
+                                onChange={(e) =>
+                                  handleLineTarifChange(l.id, e.target.value)
+                                }
+                                placeholder="0,00"
+                              />
+                            </td>
+                            <td className="px-1 py-0.5">
                               {l.codag_attribue || (
                                 <span className="text-slate-400">Attribué par le GDR</span>
                               )}
                             </td>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-3 py-1.5">{l.nom_fournisseur}</td>
-                          <td className="px-3 py-1.5">{l.marque}</td>
-                          <td className="px-3 py-1.5">{l.ref_info}</td>
-                          <td className="px-3 py-1.5">{l.ean}</td>
-                          <td className="px-3 py-1.5">{l.ref_com}</td>
-                          <td className="px-3 py-1.5">{l.designation}</td>
-                          <td className="px-3 py-1.5">
-                            {l.tarif != null ? `${l.tarif.toFixed(2)} €` : "-"}
-                          </td>
-                          {(ticket.type === "creation" ||
-                            ticket.type === "creation_enrichissement") && (
-                            <td className="px-3 py-1.5">
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-1 py-0.5">{l.nom_fournisseur}</td>
+                            <td className="px-1 py-0.5">{l.marque}</td>
+                            <td className="px-1 py-0.5">{l.ref_info}</td>
+                            <td className="px-1 py-0.5">{l.ean}</td>
+                            <td className="px-1 py-0.5">{l.ref_com}</td>
+                            <td className="px-1 py-0.5">{l.designation}</td>
+                            <td className="px-1 py-0.5">
+                              {l.tarif != null ? `${Number(l.tarif).toFixed(2).replace(".", ",")} €` : "-"}
+                            </td>
+                            <td className="px-1 py-0.5">
                               {l.codag_attribue || (
                                 <span className="text-slate-400">En cours</span>
                               )}
                             </td>
-                          )}
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </section>
 

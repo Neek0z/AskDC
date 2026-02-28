@@ -34,12 +34,12 @@ export function AdminTicketsPage() {
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-4 py-2 text-left font-medium text-slate-600">Référence</th>
-                <th className="px-4 py-2 text-left font-medium text-slate-600">Type</th>
-                <th className="px-4 py-2 text-left font-medium text-slate-600">Statut</th>
-                <th className="px-4 py-2 text-left font-medium text-slate-600">Urgent</th>
-                <th className="px-4 py-2 text-left font-medium text-slate-600">Créé le</th>
-                <th className="px-4 py-2" />
+                <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Référence</th>
+                <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Type</th>
+                <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Statut</th>
+                <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Urgent</th>
+                <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Créé le</th>
+                <th className="px-1.5 py-0.5" />
               </tr>
             </thead>
             <tbody>
@@ -48,15 +48,15 @@ export function AdminTicketsPage() {
                   key={t.id}
                   className={t.urgent ? "bg-red-50/60" : "hover:bg-slate-50"}
                 >
-                  <td className="px-4 py-2 text-slate-900">{t.reference}</td>
-                  <td className="px-4 py-2 text-slate-700">
+                  <td className="px-1.5 py-0.5 text-slate-900">{t.reference}</td>
+                  <td className="px-1.5 py-0.5 text-slate-700">
                     {t.type === "creation"
                       ? "Création CODAG"
                       : t.type === "enrichissement"
                       ? "Enrichissement"
                       : "Création CODAG + enrichissement"}
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-1.5 py-0.5">
                     <Badge>
                       {t.status === "envoye"
                         ? "Envoyé"
@@ -69,13 +69,13 @@ export function AdminTicketsPage() {
                         : "Terminé"}
                     </Badge>
                   </td>
-                  <td className="px-4 py-2">
+                  <td className="px-1.5 py-0.5">
                     {t.urgent && <Badge variant="danger">Urgent</Badge>}
                   </td>
-                  <td className="px-4 py-2 text-slate-600">
+                  <td className="px-1.5 py-0.5 text-slate-600">
                     {new Date(t.created_at).toLocaleString("fr-FR")}
                   </td>
-                  <td className="px-4 py-2 text-right">
+                  <td className="px-1.5 py-0.5 text-right">
                     <Link
                       to={`/gdr/tickets/${t.id}`}
                       className="text-xs font-medium text-primary hover:underline"

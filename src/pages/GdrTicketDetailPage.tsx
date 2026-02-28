@@ -75,6 +75,12 @@ export function GdrTicketDetailPage() {
           content: closingNote
         });
       }
+
+      if (status === "termine") {
+        void supabase.functions.invoke("send-closure-email", {
+          body: { ticket_id: ticket.id }
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -123,30 +129,30 @@ export function GdrTicketDetailPage() {
               <table className="min-w-full text-xs md:text-sm">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Nom fournisseur
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Marque
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Réf info
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       EAN
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Ref com
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Désignation
                     </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-600">
+                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                       Tarif
                     </th>
                     {(ticket.type === "creation" ||
                       ticket.type === "creation_enrichissement") && (
-                      <th className="px-3 py-2 text-left font-medium text-slate-600">
+                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
                         CODAG attribué
                       </th>
                     )}
@@ -155,13 +161,13 @@ export function GdrTicketDetailPage() {
                 <tbody>
                   {ticket.article_lines.map((l) => (
                     <tr key={l.id} className="hover:bg-slate-50">
-                      <td className="px-3 py-1.5">{l.nom_fournisseur}</td>
-                      <td className="px-3 py-1.5">{l.marque}</td>
-                      <td className="px-3 py-1.5">{l.ref_info}</td>
-                      <td className="px-3 py-1.5">{l.ean || "—"}</td>
-                      <td className="px-3 py-1.5">{l.ref_com || "—"}</td>
-                      <td className="px-3 py-1.5">{l.designation}</td>
-                      <td className="px-3 py-1.5">
+                      <td className="px-1 py-0.5">{l.nom_fournisseur}</td>
+                      <td className="px-1 py-0.5">{l.marque}</td>
+                      <td className="px-1 py-0.5">{l.ref_info}</td>
+                      <td className="px-1 py-0.5">{l.ean || "—"}</td>
+                      <td className="px-1 py-0.5">{l.ref_com || "—"}</td>
+                      <td className="px-1 py-0.5">{l.designation}</td>
+                      <td className="px-1 py-0.5">
                         {l.tarif != null
                           ? (Math.round(Number(l.tarif) * 100) / 100)
                               .toFixed(2)
@@ -170,7 +176,7 @@ export function GdrTicketDetailPage() {
                       </td>
                       {(ticket.type === "creation" ||
                         ticket.type === "creation_enrichissement") && (
-                        <td className="px-3 py-1.5">
+                        <td className="px-1 py-0.5">
                           <Input
                             value={l.codag_attribue ?? ""}
                             onChange={(e) => updateCodag(l.id, e.target.value)}

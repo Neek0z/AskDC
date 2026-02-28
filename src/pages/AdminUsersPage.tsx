@@ -51,25 +51,25 @@ export function AdminUsersPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Nom</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Email</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Rôle</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">
+                  <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Nom</th>
+                  <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Email</th>
+                  <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">Rôle</th>
+                  <th className="px-1.5 py-0.5 text-left font-medium text-slate-600">
                     Actif
                   </th>
-                  <th className="px-4 py-2" />
+                  <th className="px-1.5 py-0.5" />
                 </tr>
               </thead>
               <tbody>
                 {users.map((u) => (
                   <tr key={u.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-2 text-slate-900">{u.full_name || "-"}</td>
-                    <td className="px-4 py-2 text-slate-700">{u.email}</td>
-                    <td className="px-4 py-2 text-slate-700">{u.role}</td>
-                    <td className="px-4 py-2 text-slate-700">
+                    <td className="px-1.5 py-0.5 text-slate-900">{u.full_name || "-"}</td>
+                    <td className="px-1.5 py-0.5 text-slate-700">{u.email}</td>
+                    <td className="px-1.5 py-0.5 text-slate-700">{u.role}</td>
+                    <td className="px-1.5 py-0.5 text-slate-700">
                       {u.is_active ? "Oui" : "Non"}
                     </td>
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-1.5 py-0.5 text-right">
                       <Button
                         size="sm"
                         variant="ghost"
