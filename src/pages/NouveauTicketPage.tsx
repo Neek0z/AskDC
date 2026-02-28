@@ -708,7 +708,7 @@ export function NouveauTicketPage() {
           </CardHeader>
           {type === "enrichissement" ? (
             <div className="px-4 pb-2">
-              <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 px-0.5 py-0.5">
+              <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800 px-0.5 py-0.5">
                 <table className="min-w-full text-[11px] md:text-xs">
                   <thead>
                     <tr className="bg-slate-100 text-[11px] uppercase tracking-wide text-slate-600">
@@ -831,7 +831,7 @@ export function NouveauTicketPage() {
               Copier le tableau
             </Button>
           </div>
-          <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 px-0.5 py-0.5">
+          <div className="overflow-x-auto rounded-md border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800 px-0.5 py-0.5">
             <table className="min-w-full border-separate border-spacing-y-1 text-[11px] md:text-xs table-fixed">
               <thead>
                 <tr className="bg-slate-100 text-[11px] uppercase tracking-wide text-slate-600">

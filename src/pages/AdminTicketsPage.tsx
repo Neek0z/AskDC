@@ -30,7 +30,7 @@ export function AdminTicketsPage() {
       {loading ? (
         <div className="text-sm text-slate-600">Chargement des tickets...</div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50">
               <tr>

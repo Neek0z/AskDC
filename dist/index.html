@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CODAG Request Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function(){
+        var s=localStorage.getItem('codag-theme');
+        var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if(d)document.documentElement.classList.add('dark');
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-DxiMJllB.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CUV3Qbyy.css">
+  </head>
+  <body class="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div id="root"></div>
+  </body>
+</html>
+

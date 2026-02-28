@@ -83,22 +83,22 @@ export function MesTicketsPage() {
     <AppLayout>
       <div className="mx-auto max-w-6xl">
       {loading ? (
-        <div className="text-sm text-slate-600">Chargement de vos tickets...</div>
+        <div className="text-sm text-slate-600 dark:text-slate-400">Chargement de vos tickets...</div>
       ) : tickets.length === 0 ? (
-        <div className="text-sm text-slate-600">
+        <div className="text-sm text-slate-600 dark:text-slate-400">
           Aucun ticket pour le moment. Créez votre première demande.
         </div>
       ) : (
-          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
             <table className="min-w-full text-sm">
-              <thead className="bg-slate-50">
+              <thead className="bg-slate-50 dark:bg-slate-700">
                 <tr>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Référence</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Type</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Statut</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">Urgence</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">GDR</th>
-                  <th className="px-4 py-2 text-left font-medium text-slate-600">
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">Référence</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">Type</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">Statut</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">Urgence</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">GDR</th>
+                  <th className="px-4 py-2 text-left font-medium text-slate-600 dark:text-slate-400 dark:text-slate-300">
                     Créé le
                   </th>
                   <th className="px-4 py-2" />
@@ -108,10 +108,10 @@ export function MesTicketsPage() {
                 {tickets.map((t) => (
                   <tr
                     key={t.id}
-                    className={t.urgent ? "bg-red-50/60" : "hover:bg-slate-50"}
+                    className={t.urgent ? "bg-red-50/60" : "hover:bg-slate-50 dark:hover:bg-slate-700"}
                   >
-                    <td className="px-4 py-2 text-slate-900">{t.reference}</td>
-                    <td className="px-4 py-2 text-slate-700">
+                    <td className="px-4 py-2 text-slate-900 dark:text-slate-100">{t.reference}</td>
+                    <td className="px-4 py-2 text-slate-700 dark:text-slate-300">
                       {t.type === "creation"
                         ? "Création CODAG"
                         : t.type === "enrichissement"
@@ -124,12 +124,12 @@ export function MesTicketsPage() {
                     <td className="px-4 py-2">
                       {t.urgent && <Badge variant="danger">Urgent</Badge>}
                     </td>
-                    <td className="px-4 py-2 text-slate-600">
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
                       {t.gdr
                         ? t.gdr.full_name?.trim() || t.gdr.email
                         : "—"}
                     </td>
-                    <td className="px-4 py-2 text-slate-600">
+                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
                       {new Date(t.created_at).toLocaleString("fr-FR")}
                     </td>
                     <td className="px-4 py-2 text-right">

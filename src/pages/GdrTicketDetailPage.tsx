@@ -121,79 +121,113 @@ export function GdrTicketDetailPage() {
             </div>
           </div>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4">
             <h2 className="mb-2 text-sm font-semibold text-slate-800">
-              Lignes article (CODAG)
+              {ticket.type === "enrichissement"
+                ? "Lignes à enrichir"
+                : "Lignes article (CODAG)"}
             </h2>
             <div className="overflow-x-auto">
-              <table className="min-w-full text-xs md:text-sm">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Nom fournisseur
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Marque
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Réf info
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      EAN
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Ref com
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Désignation
-                    </th>
-                    <th className="px-1 py-0.5 text-left font-medium text-slate-600">
-                      Tarif
-                    </th>
-                    {(ticket.type === "creation" ||
-                      ticket.type === "creation_enrichissement") && (
-                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+              {ticket.type === "enrichissement" ? (
+                <table className="min-w-full text-xs md:text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-700">
+                    <tr>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Fournisseur
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
                         CODAG attribué
                       </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {ticket.article_lines.map((l) => (
-                    <tr key={l.id} className="hover:bg-slate-50">
-                      <td className="px-1 py-0.5">{l.nom_fournisseur}</td>
-                      <td className="px-1 py-0.5">{l.marque}</td>
-                      <td className="px-1 py-0.5">{l.ref_info}</td>
-                      <td className="px-1 py-0.5">{l.ean || "—"}</td>
-                      <td className="px-1 py-0.5">{l.ref_com || "—"}</td>
-                      <td className="px-1 py-0.5">{l.designation}</td>
-                      <td className="px-1 py-0.5">
-                        {l.tarif != null
-                          ? (Math.round(Number(l.tarif) * 100) / 100)
-                              .toFixed(2)
-                              .replace(".", ",")
-                          : "—"}
-                      </td>
-                      {(ticket.type === "creation" ||
-                        ticket.type === "creation_enrichissement") && (
-                        <td className="px-1 py-0.5">
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ticket.article_lines.map((l) => (
+                      <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                        <td className="px-3 py-0.5 text-slate-800 dark:text-slate-200">
+                          {l.nom_fournisseur}
+                        </td>
+                        <td className="px-3 py-0.5">
                           <Input
                             value={l.codag_attribue ?? ""}
                             onChange={(e) => updateCodag(l.id, e.target.value)}
-                            placeholder="CODAG"
+                            placeholder="Saisir le CODAG"
+                            className="max-w-[200px]"
                           />
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="min-w-full text-xs md:text-sm">
+                  <thead className="bg-slate-50 dark:bg-slate-700">
+                    <tr>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Nom fournisseur
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Marque
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Réf info
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        EAN
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Ref com
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Désignation
+                      </th>
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                        Tarif
+                      </th>
+                      {(ticket.type === "creation" ||
+                        ticket.type === "creation_enrichissement") && (
+                        <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
+                          CODAG attribué
+                        </th>
                       )}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ticket.article_lines.map((l) => (
+                      <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                        <td className="px-3 py-0.5">{l.nom_fournisseur}</td>
+                        <td className="px-3 py-0.5">{l.marque}</td>
+                        <td className="px-3 py-0.5">{l.ref_info}</td>
+                        <td className="px-3 py-0.5">{l.ean || ""}</td>
+                        <td className="px-3 py-0.5">{l.ref_com || ""}</td>
+                        <td className="px-3 py-0.5">{l.designation}</td>
+                        <td className="px-3 py-0.5">
+                          {l.tarif != null
+                            ? (Math.round(Number(l.tarif) * 100) / 100)
+                                .toFixed(2)
+                                .replace(".", ",")
+                            : ""}
+                        </td>
+                        {(ticket.type === "creation" ||
+                          ticket.type === "creation_enrichissement") && (
+                          <td className="px-3 py-0.5">
+                            <Input
+                              value={l.codag_attribue ?? ""}
+                              onChange={(e) => updateCodag(l.id, e.target.value)}
+                              placeholder="CODAG"
+                            />
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </section>
 
           {(ticket.type === "enrichissement" ||
             ticket.type === "creation_enrichissement") && (
-            <section className="rounded-lg border border-slate-200 bg-white p-4">
+            <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4">
               <h2 className="mb-2 text-sm font-semibold text-slate-800">
                 Note de clôture (enrichissement)
               </h2>

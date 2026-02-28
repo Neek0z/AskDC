@@ -30,7 +30,8 @@ create table if not exists public.article_lines (
   ref_com text,
   designation text not null,
   tarif numeric(12,2),
-  codag_attribue text
+  codag_attribue text,
+  comment text
 );
 
 create table if not exists public.attachments (

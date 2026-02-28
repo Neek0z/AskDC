@@ -3,7 +3,10 @@ import { cn } from "../../lib/utils";
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
   return (
-    <div className={cn("rounded-lg border border-slate-200 bg-white p-6 shadow-sm", className)}>
+    <div className={cn(
+        "rounded-lg border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800",
+        className
+      )}>
       {children}
     </div>
   );
@@ -24,6 +27,6 @@ export function CardDescription({
   className?: string;
   children: ReactNode;
 }) {
-  return <p className={cn("text-sm text-slate-500", className)}>{children}</p>;
+  return <p className={cn("text-sm text-slate-500 dark:text-slate-400", className)}>{children}</p>;
 }
 

@@ -1,6 +1,7 @@
 import { FormEvent, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { DarkModeSwitch } from "../components/DarkModeSwitch";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
@@ -38,17 +39,20 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-900">
+      <div className="absolute right-4 top-4">
+        <DarkModeSwitch />
+      </div>
+      <Card className="w-full max-w-md dark:border-slate-700 dark:bg-slate-800">
         <CardHeader>
-          <CardTitle>Connexion CODAG Request Manager</CardTitle>
-          <CardDescription>
+          <CardTitle className="dark:text-slate-100">Connexion CODAG Request Manager</CardTitle>
+          <CardDescription className="dark:text-slate-400">
             Connectez-vous avec votre compte interne pour gérer les demandes CODAG.
           </CardDescription>
         </CardHeader>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700" htmlFor="email">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="email">
               Email
             </label>
             <Input
@@ -62,7 +66,7 @@ export function LoginPage() {
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700" htmlFor="password">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300" htmlFor="password">
               Mot de passe
             </label>
             <Input

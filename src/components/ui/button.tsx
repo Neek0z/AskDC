@@ -15,8 +15,9 @@ const base =
 const variantClasses: Record<ButtonVariant, string> = {
   default: "bg-primary text-primary-foreground hover:bg-primary/90",
   outline:
-    "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 hover:text-slate-900",
-  ghost: "bg-transparent hover:bg-slate-100 text-slate-700",
+    "border border-slate-300 bg-white text-slate-900 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700",
+  ghost:
+    "bg-transparent hover:bg-slate-100 text-slate-700 dark:hover:bg-slate-700 dark:text-slate-300",
   destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90"
 };
 

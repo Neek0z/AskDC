@@ -37,6 +37,7 @@ export interface ArticleLine {
   designation: string;
   tarif: number | null;
   codag_attribue: string | null;
+  comment?: string | null;
 }
 
 export interface Attachment {

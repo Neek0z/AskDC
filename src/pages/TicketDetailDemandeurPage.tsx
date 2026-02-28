@@ -199,7 +199,7 @@ export function TicketDetailDemandeurPage() {
           </div>
 
           {/* Urgence éditable uniquement en statut "envoye" */}
-          <section className="rounded-lg border border-slate-200 bg-white p-3 text-sm">
+          <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-3 text-sm">
             <h2 className="mb-2 text-sm font-semibold text-slate-800">Urgence</h2>
             {isEditable ? (
               <div className="flex flex-col gap-2 md:flex-row md:items-center">
@@ -233,40 +233,40 @@ export function TicketDetailDemandeurPage() {
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4">
             <h2 className="mb-2 text-sm font-semibold text-slate-800">
               {ticket.type === "enrichissement" ? "Lignes à enrichir" : "Articles"}
             </h2>
             <div className="overflow-x-auto">
               {ticket.type === "enrichissement" ? (
                 <table className="min-w-full text-xs md:text-sm">
-                  <thead className="bg-slate-50">
+                  <thead className="bg-slate-50 dark:bg-slate-700">
                     <tr>
-                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
                         Fournisseur
                       </th>
-                      <th className="px-1 py-0.5 text-left font-medium text-slate-600">
+                      <th className="px-3 py-0.5 text-left font-medium text-slate-600 dark:text-slate-300">
                         CODAG attribué
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {(isEditable ? editLines ?? [] : ticket.article_lines)?.map((l) => (
-                      <tr key={l.id} className="hover:bg-slate-50">
-                        <td className="px-1 py-0.5">
+                      <tr key={l.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                        <td className="px-3 py-0.5">
                           {isEditable ? (
                             <input
-                              className="h-7 w-full rounded border border-slate-200 bg-white px-2 text-xs"
+                              className="h-7 w-full max-w-xs rounded border border-slate-200 bg-white px-2 text-xs dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
                               value={l.nom_fournisseur}
                               onChange={(e) =>
                                 handleLineFieldChange(l.id, "nom_fournisseur", e.target.value)
                               }
                             />
                           ) : (
-                            l.nom_fournisseur
+                            <span className="text-slate-800 dark:text-slate-200">{l.nom_fournisseur}</span>
                           )}
                         </td>
-                        <td className="px-1 py-0.5">
+                        <td className="px-3 py-0.5 text-slate-800 dark:text-slate-200">
                           {l.codag_attribue || (
                             <span className="text-slate-400">
                               {isEditable ? "Sera attribué par le GDR" : "En cours"}
@@ -406,7 +406,7 @@ export function TicketDetailDemandeurPage() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4">
             <h2 className="mb-2 text-sm font-semibold text-slate-800">Pièces jointes</h2>
             {ticket.attachments?.length ? (
               <ul className="list-inside list-disc text-sm text-slate-700">
@@ -428,7 +428,7 @@ export function TicketDetailDemandeurPage() {
             )}
           </section>
 
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <section className="rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 p-4">
             <h2 className="mb-2 text-sm font-semibold text-slate-800">Commentaires</h2>
             {ticket.comments?.length ? (
               <div className="space-y-2 text-sm">

@@ -4,8 +4,15 @@
     <meta charset="UTF-8" />
     <title>CODAG Request Manager</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function(){
+        var s=localStorage.getItem('codag-theme');
+        var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if(d)document.documentElement.classList.add('dark');
+      })();
+    </script>
   </head>
-  <body class="min-h-screen bg-slate-50">
+  <body class="min-h-screen bg-slate-50 dark:bg-slate-900">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
